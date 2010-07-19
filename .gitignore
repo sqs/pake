@@ -2,3 +2,5 @@
 .#*
 libpake.a
 src/pake.o
+test/test_pake.o
+test/test_pake
