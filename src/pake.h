@@ -68,9 +68,6 @@ struct pake_info {
 int pake_server_init(struct pake_info *p, BN_CTX *ctx, BIGNUM *beta);
 int pake_client_init(struct pake_info *p, BN_CTX *ctx);
 
-int pake_server_init_state(struct pake_info *p, BN_CTX *ctx, BIGNUM *beta);
-int pake_client_init_state(struct pake_info *p, BN_CTX *ctx);
-
 int pake_client_set_credentials(struct pake_info *p, const char *username, const char *realm, const char *password, BN_CTX *ctx);
 int pake_server_set_credentials(struct pake_info *p, const char *username, const char *realm, const BIGNUM *pi_0, const EC_POINT *L, BN_CTX *ctx);
 

@@ -11,6 +11,9 @@
 const unsigned char TCPCRYPT_TAG_CLIENT = 0;
 const unsigned char TCPCRYPT_TAG_SERVER = 1;
 
+static int pake_server_init_state(struct pake_info *p, BN_CTX *ctx, BIGNUM *beta);
+static int pake_client_init_state(struct pake_info *p, BN_CTX *ctx);
+
 static int pake_init_public(struct pake_info *p, BN_CTX *ctx);
 
 static int pake_server_compute_N_Z(struct pake_info *p, BN_CTX *ctx);
