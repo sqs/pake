@@ -1,2 +1,4 @@
 #*#
 .#*
+libpake.a
+src/pake.o
