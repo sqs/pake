@@ -357,6 +357,12 @@ int pake_server_recv_X(struct pake_info *p, EC_POINT *X) {
     return 1;
 }
 
+int pake_server_recv_X_string(struct pake_info *p, const char *X_string) {
+    EC_POINT *X = EC_POINT_new(p->public.G);
+    EC_POINT_hex2point(p->public.G, X_string, X, p->ctx);
+    return pake_server_recv_X(p, X);
+}
+
 /* Compute $N = L^\beta$ and $Z = (X/U^{\pi_0})^\beta.$ */
 int pake_server_compute_N_Z(struct pake_info *p) {
     int ret = 0;
