@@ -463,6 +463,15 @@ int tcpcrypt_pake_compute_resp(struct pake_info *p, unsigned long tcpcrypt_sid, 
     return ret;
 }
 
+void pake_free(struct pake_info *p) {
+    BN_CTX_end(p->ctx);
+    BN_CTX_free(p->ctx);    
+}
+
+void pake_clear(struct pake_info *p) {
+    memset(p, 0, sizeof(struct pake_info));
+}
+
 void debug_pake_info(const struct pake_info *p) {
     const char *t = "\t";
 

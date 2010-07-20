@@ -50,11 +50,11 @@ void test_pake() {
     assert(strncmp((char *)ps.shared.resps, (char *)pc.shared.resps, RESP_LENGTH) == 0);
     assert(strncmp((char *)ps.shared.respc, (char *)pc.shared.respc, RESP_LENGTH) == 0);
     assert(strncmp((char *)ps.shared.resps, (char *)ps.shared.respc, RESP_LENGTH) != 0); /* shouldn't be equal - this will fail once per universe */
-
-    BN_CTX_end(ps.ctx);
-    BN_CTX_end(pc.ctx);
-    BN_CTX_free(ps.ctx);
-    BN_CTX_free(pc.ctx);
+    
+    pake_free(&ps);
+    pake_free(&pc);
+    pake_clear(&ps);
+    pake_clear(&pc);
 }
 
 int main(int argc, char **argv) {

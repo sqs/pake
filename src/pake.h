@@ -78,6 +78,9 @@ int pake_server_recv_X(struct pake_info *p, EC_POINT *X);
 
 int pake_compute_h(struct pake_info *p);
 
+void pake_free(struct pake_info *p);
+void pake_clear(struct pake_info *p);
+
 int tcpcrypt_pake_compute_resps(struct pake_info *p, unsigned long tcpcrypt_sid);
 int tcpcrypt_pake_compute_respc(struct pake_info *p, unsigned long tcpcrypt_sid);
 
