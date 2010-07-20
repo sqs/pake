@@ -76,8 +76,6 @@ int pake_server_set_credentials(struct pake_info *p, const char *username, const
 int pake_client_recv_Y(struct pake_info *p, EC_POINT *Y);
 int pake_server_recv_X(struct pake_info *p, EC_POINT *X);
 
-int pake_compute_h(struct pake_info *p);
-
 void pake_free(struct pake_info *p);
 void pake_clear(struct pake_info *p);
 
@@ -85,7 +83,5 @@ int tcpcrypt_pake_compute_resps(struct pake_info *p, unsigned long tcpcrypt_sid)
 int tcpcrypt_pake_compute_respc(struct pake_info *p, unsigned long tcpcrypt_sid);
 
 void debug_pake_info(const struct pake_info *p);
-void debug_bignum(BIGNUM *bn);
-void debug_point(const EC_GROUP *G, const char *msg, const EC_POINT *P, BN_CTX *ctx);
 
 #endif // TCPCRYPT_PAKE_H

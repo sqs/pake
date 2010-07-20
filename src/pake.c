@@ -15,10 +15,17 @@ static int pake_server_init_state(struct pake_info *p, BIGNUM *beta);
 static int pake_client_init_state(struct pake_info *p);
 static int pake_init_public(struct pake_info *p);
 
+static int pake_compute_h(struct pake_info *p);
 static int pake_server_compute_N_Z(struct pake_info *p);
 static int pake_client_compute_N_Z(struct pake_info *p);
 
 static int tcpcrypt_pake_compute_resp(struct pake_info *p, unsigned long tcpcrypt_sid, int is_resps);
+
+static void debug_bignum(BIGNUM *bn);
+static void debug_point(const EC_GROUP *G, 
+                        const char *msg, 
+                        const EC_POINT *P, 
+                        BN_CTX *ctx);
 
 static int get_affine_coordinates(const EC_GROUP *G,
                            const EC_POINT *P,
