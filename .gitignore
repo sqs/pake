@@ -1,4 +1,5 @@
 #*#
 .#*
-libpake.a
+*.a
 *.o
+test/test_pake

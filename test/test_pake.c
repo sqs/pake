@@ -1,3 +1,4 @@
+#include "test_pake.h"
 #include "pake.h"
 #include <stdio.h>
 #include <string.h>
@@ -51,3 +52,10 @@ void test_pake() {
     BN_CTX_end(ctx);
     BN_CTX_free(ctx);
 }
+
+int main(int argc, char **argv) {
+    printf("*** test_pake\n");
+    test_pake();
+    return 0;
+}
+

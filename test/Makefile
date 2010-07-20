@@ -13,8 +13,8 @@ test: test_pake
 %.o: %.c
 	$(CC) $(INCLUDES) $(CFLAGS) -c $< -o $@
 
-$(OUT): $(OBJ)
-	$(CC) $(LIBS) $(LDFLAGS) -o $@ $(OBJS)
+$(OUT): $(OBJ) ../libpake.a
+	$(CC) $(LIBS) $(LDFLAGS) -o $@ $(OBJ) ../libpake.a
 
 clean:
 	rm -f $(OBJ) $(OUT)

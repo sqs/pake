@@ -11,6 +11,8 @@
 const unsigned char TCPCRYPT_TAG_CLIENT = 0;
 const unsigned char TCPCRYPT_TAG_SERVER = 1;
 
+static int pake_server_init_state(struct pake_info *p, BN_CTX *ctx, BIGNUM *beta);
+static int pake_client_init_state(struct pake_info *p, BN_CTX *ctx);
 static int pake_init_public(struct pake_info *p, BN_CTX *ctx);
 
 static int pake_server_compute_N_Z(struct pake_info *p, BN_CTX *ctx);
@@ -23,11 +25,6 @@ static int get_affine_coordinates(const EC_GROUP *G,
                            BIGNUM *x,
                            BIGNUM *y,
                            BN_CTX *ctx);
-/*** static int set_affine_coordinates(const EC_GROUP *G,
-                           EC_POINT *P,
-                           const BIGNUM *x,
-                           const BIGNUM *y,
-                           BN_CTX *ctx); ***/
 static int hash_bn(SHA256_CTX *sha, const BIGNUM *x);
 static int hash_point(SHA256_CTX *sha,
                const EC_GROUP *G,
@@ -590,19 +587,6 @@ static int get_affine_coordinates(const EC_GROUP *G,
     return EC_POINT_get_affine_coordinates_GF2m(G, P, x, y, ctx);
   }
 }
-
-/*** static int set_affine_coordinates(const EC_GROUP *G,
-                           EC_POINT *P,
-                           const BIGNUM *x,
-                           const BIGNUM *y,
-                           BN_CTX *ctx) {
-  if (EC_METHOD_get_field_type(EC_GROUP_method_of(G))
-      == NID_X9_62_prime_field) {
-    return EC_POINT_set_affine_coordinates_GFp (G, P, x, y, ctx);
-  } else { * NID_X9_62_characteristic_two_field *
-    return EC_POINT_set_affine_coordinates_GF2m(G, P, x, y, ctx);
-  }
-} ***/
 
 static int hash_bn(SHA256_CTX *sha, const BIGNUM *x) {
   /* allocate space */
