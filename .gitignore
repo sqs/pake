@@ -3,3 +3,4 @@
 *.a
 *.o
 test/test_pake
+*.so

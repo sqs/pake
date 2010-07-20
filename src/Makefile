@@ -1,8 +1,9 @@
 SRC=pake.c
 OBJ=$(SRC:.c=.o)
-OUT=../libpake.a
+OUT=../libpake.so
 INCLUDES=-I. -I../src
 LIBS=-L/usr/local/lib -lssl
+CFLAGS+=-fPIC
 LDFLAGS=-g
 
 .SUFFIXES: .c
@@ -13,7 +14,7 @@ default: $(OUT)
 	$(CC) $(INCLUDES) $(CFLAGS) -c $< -o $@
 
 $(OUT): $(OBJ)
-	ar rcs $(OUT) $(OBJ)
+	gcc -shared -o $(OUT) $(OBJ)
 
 depend: dep
 
