@@ -4,7 +4,7 @@ OUT=../libpake.so
 INCLUDES=-I. -I../src
 LIBS=-L/usr/local/lib -lssl
 CFLAGS+=-fPIC
-LDFLAGS=-g
+LDFLAGS=-g -lssl
 
 .SUFFIXES: .c
 
@@ -14,12 +14,7 @@ default: $(OUT)
 	$(CC) $(INCLUDES) $(CFLAGS) -c $< -o $@
 
 $(OUT): $(OBJ)
-	gcc -shared -o $(OUT) $(OBJ)
-
-depend: dep
-
-dep:
-	makedepend -- $(CFLAGS) -- $(INCLUDES) $(SRC)
+	gcc -shared $(LDFLAGS) -o $(OUT) $(OBJ)
 
 clean:
 	rm -f $(OBJ) $(OUT) 
