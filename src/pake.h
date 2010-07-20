@@ -63,21 +63,23 @@ struct pake_info {
     struct pake_server_state server_state;
     unsigned isclient;
     unsigned isserver;
+
+    BN_CTX *ctx;
 };
 
-int pake_server_init(struct pake_info *p, BN_CTX *ctx, BIGNUM *beta);
-int pake_client_init(struct pake_info *p, BN_CTX *ctx);
+int pake_server_init(struct pake_info *p, BIGNUM *beta);
+int pake_client_init(struct pake_info *p);
 
-int pake_client_set_credentials(struct pake_info *p, const char *username, const char *realm, const char *password, BN_CTX *ctx);
-int pake_server_set_credentials(struct pake_info *p, const char *username, const char *realm, const BIGNUM *pi_0, const EC_POINT *L, BN_CTX *ctx);
+int pake_client_set_credentials(struct pake_info *p, const char *username, const char *realm, const char *password);
+int pake_server_set_credentials(struct pake_info *p, const char *username, const char *realm, const BIGNUM *pi_0, const EC_POINT *L);
 
 int pake_client_recv_Y(struct pake_info *p, EC_POINT *Y);
 int pake_server_recv_X(struct pake_info *p, EC_POINT *X);
 
-int pake_compute_h(struct pake_info *p, BN_CTX *ctx);
+int pake_compute_h(struct pake_info *p);
 
-int tcpcrypt_pake_compute_resps(struct pake_info *p, unsigned long tcpcrypt_sid, BN_CTX *ctx);
-int tcpcrypt_pake_compute_respc(struct pake_info *p, unsigned long tcpcrypt_sid, BN_CTX *ctx);
+int tcpcrypt_pake_compute_resps(struct pake_info *p, unsigned long tcpcrypt_sid);
+int tcpcrypt_pake_compute_respc(struct pake_info *p, unsigned long tcpcrypt_sid);
 
 void debug_pake_info(const struct pake_info *p);
 void debug_bignum(BIGNUM *bn);

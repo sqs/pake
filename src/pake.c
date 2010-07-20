@@ -11,14 +11,14 @@
 const unsigned char TCPCRYPT_TAG_CLIENT = 0;
 const unsigned char TCPCRYPT_TAG_SERVER = 1;
 
-static int pake_server_init_state(struct pake_info *p, BN_CTX *ctx, BIGNUM *beta);
-static int pake_client_init_state(struct pake_info *p, BN_CTX *ctx);
-static int pake_init_public(struct pake_info *p, BN_CTX *ctx);
+static int pake_server_init_state(struct pake_info *p, BIGNUM *beta);
+static int pake_client_init_state(struct pake_info *p);
+static int pake_init_public(struct pake_info *p);
 
-static int pake_server_compute_N_Z(struct pake_info *p, BN_CTX *ctx);
-static int pake_client_compute_N_Z(struct pake_info *p, BN_CTX *ctx);
+static int pake_server_compute_N_Z(struct pake_info *p);
+static int pake_client_compute_N_Z(struct pake_info *p);
 
-static int tcpcrypt_pake_compute_resp(struct pake_info *p, unsigned long tcpcrypt_sid, int is_resps, BN_CTX *ctx);
+static int tcpcrypt_pake_compute_resp(struct pake_info *p, unsigned long tcpcrypt_sid, int is_resps);
 
 static int get_affine_coordinates(const EC_GROUP *G,
                            const EC_POINT *P,
@@ -33,13 +33,13 @@ static int hash_point(SHA256_CTX *sha,
                BIGNUM *P_y,
                BN_CTX *ctx);
 
-int pake_server_init(struct pake_info *p, BN_CTX *ctx, BIGNUM *beta) {
+int pake_server_init(struct pake_info *p, BIGNUM *beta) {
     int ret = 0;
 
     p->isserver = 1;
     
-    if (!pake_init_public(p, ctx)) goto err;
-    if (!pake_server_init_state(p, ctx, beta)) goto err;
+    if (!pake_init_public(p)) goto err;
+    if (!pake_server_init_state(p, beta)) goto err;
 
     ret = 1;
 
@@ -47,13 +47,13 @@ int pake_server_init(struct pake_info *p, BN_CTX *ctx, BIGNUM *beta) {
     return ret;
 }
 
-int pake_client_init(struct pake_info *p, BN_CTX *ctx) {
+int pake_client_init(struct pake_info *p) {
     int ret = 0;
 
     p->isclient = 1;
 
-    if (!pake_init_public(p, ctx)) goto err;
-    if (!pake_client_init_state(p, ctx)) goto err;
+    if (!pake_init_public(p)) goto err;
+    if (!pake_client_init_state(p)) goto err;
 
     ret = 1;
 
@@ -62,7 +62,7 @@ int pake_client_init(struct pake_info *p, BN_CTX *ctx) {
 }
 
 /* Set $G,$ $U,$ and $V.$ */
-int pake_init_public(struct pake_info *p, BN_CTX *ctx) {
+int pake_init_public(struct pake_info *p) {
     int ret = 0;
     BIGNUM *tmp = NULL, *order = NULL;
 
@@ -77,7 +77,7 @@ int pake_init_public(struct pake_info *p, BN_CTX *ctx) {
     /* set G */
     p->public.G = EC_GROUP_new_by_curve_name(NID_X9_62_prime256v1);
     if (!p->public.G) goto err;
-    if (!EC_GROUP_get_order(p->public.G, order, ctx)) goto err;
+    if (!EC_GROUP_get_order(p->public.G, order, p->ctx)) goto err;
     
     /* alloc U and V */
     p->public.U = EC_POINT_new(p->public.G);
@@ -89,13 +89,13 @@ int pake_init_public(struct pake_info *p, BN_CTX *ctx) {
         if (!BN_rand_range(tmp, order)) goto err;
     } while (BN_is_zero(tmp));
     if (!BN_hex2bn(&tmp, "799ABC951C32825396D5EEA12C527308ECC0393621EEFC82B5B2C6AB4BA895B6")) goto err;
-    if (!EC_POINT_mul(p->public.G, p->public.U, tmp, NULL, NULL, ctx)) goto err;
+    if (!EC_POINT_mul(p->public.G, p->public.U, tmp, NULL, NULL, p->ctx)) goto err;
 
     do {
         if (!BN_rand_range(tmp, order)) goto err;
     } while (BN_is_zero(tmp));
     if (!BN_hex2bn(&tmp, "7417A0F2C5824875508F1524CAFA2521F49562B89D86D15530BFF792EBBB8BDD")) goto err;
-    if (!EC_POINT_mul(p->public.G, p->public.V, tmp, NULL, NULL, ctx)) goto err;
+    if (!EC_POINT_mul(p->public.G, p->public.V, tmp, NULL, NULL, p->ctx)) goto err;
 
     ret = 1;
 
@@ -105,7 +105,7 @@ int pake_init_public(struct pake_info *p, BN_CTX *ctx) {
 }
 
 /* Choose $\beta \in \mathbf{Z}_q$ at random. */
-int pake_server_init_state(struct pake_info *p, BN_CTX *ctx, BIGNUM *beta) {
+int pake_server_init_state(struct pake_info *p, BIGNUM *beta) {
     int ret = 0;
     BIGNUM *order = NULL;
 
@@ -116,7 +116,7 @@ int pake_server_init_state(struct pake_info *p, BN_CTX *ctx, BIGNUM *beta) {
     } else {
         p->server_state.beta = BN_new();
         if (!order || !p->server_state.beta) goto err;
-        if (!EC_GROUP_get_order(p->public.G, order, ctx)) goto err;
+        if (!EC_GROUP_get_order(p->public.G, order, p->ctx)) goto err;
     
         /* choose beta */
         do {
@@ -136,14 +136,14 @@ int pake_server_init_state(struct pake_info *p, BN_CTX *ctx, BIGNUM *beta) {
 
 /* Choose $\beta in \mathbf{Z}_q$ at random, and compute $X=g^\alpha
    U^{\pi_0}.$ */
-int pake_client_init_state(struct pake_info *p, BN_CTX *ctx) {
+int pake_client_init_state(struct pake_info *p) {
     int ret = 0;
     BIGNUM *order = NULL;
 
     order = BN_new();
     p->client_state.alpha = BN_new();
     if (!order || !p->client_state.alpha) goto err;
-    if (!EC_GROUP_get_order(p->public.G, order, ctx)) goto err;
+    if (!EC_GROUP_get_order(p->public.G, order, p->ctx)) goto err;
     
     /* choose alpha */
     do {
@@ -169,7 +169,7 @@ static int pake_common_set_credentials(struct pake_info *p,
     return 1;
 }
 
-static int pake_common_precompute(struct pake_info *p, BN_CTX *ctx) {
+static int pake_common_precompute(struct pake_info *p) {
     int ret = 0;
     EC_POINT *tmp = NULL;
 
@@ -177,21 +177,21 @@ static int pake_common_precompute(struct pake_info *p, BN_CTX *ctx) {
 
     /* compute V_pi_0 */
     if (!(p->shared.V_pi_0 = EC_POINT_new(p->public.G))) goto err; /* TODO: free this */
-    if (!EC_POINT_mul(p->public.G, p->shared.V_pi_0, NULL, p->public.V, p->shared.pi_0, ctx)) goto err;
+    if (!EC_POINT_mul(p->public.G, p->shared.V_pi_0, NULL, p->public.V, p->shared.pi_0, p->ctx)) goto err;
 
     /* compute U_pi_0 */
     if (!(p->shared.U_pi_0 = EC_POINT_new(p->public.G))) goto err; /* TODO: free this */
-    if (!EC_POINT_mul(p->public.G, p->shared.U_pi_0, NULL, p->public.U, p->shared.pi_0, ctx)) goto err;
+    if (!EC_POINT_mul(p->public.G, p->shared.U_pi_0, NULL, p->public.U, p->shared.pi_0, p->ctx)) goto err;
 
     /* compute U_minus_pi_0 */
     if (!(p->shared.U_minus_pi_0 = EC_POINT_new(p->public.G))) goto err; /* TODO: free this */
-    if (!EC_POINT_mul(p->public.G, p->shared.U_minus_pi_0, NULL, p->public.U, p->shared.pi_0, ctx)) goto err;
-    if (!EC_POINT_invert(p->public.G, p->shared.U_minus_pi_0, ctx)) goto err;
+    if (!EC_POINT_mul(p->public.G, p->shared.U_minus_pi_0, NULL, p->public.U, p->shared.pi_0, p->ctx)) goto err;
+    if (!EC_POINT_invert(p->public.G, p->shared.U_minus_pi_0, p->ctx)) goto err;
 
     /* compute V_minus_pi_0 */
     if (!(p->shared.V_minus_pi_0 = EC_POINT_new(p->public.G))) goto err; /* TODO: free this */
-    if (!EC_POINT_mul(p->public.G, p->shared.V_minus_pi_0, NULL, p->public.V, p->shared.pi_0, ctx)) goto err;
-    if (!EC_POINT_invert(p->public.G, p->shared.V_minus_pi_0, ctx)) goto err;
+    if (!EC_POINT_mul(p->public.G, p->shared.V_minus_pi_0, NULL, p->public.V, p->shared.pi_0, p->ctx)) goto err;
+    if (!EC_POINT_invert(p->public.G, p->shared.V_minus_pi_0, p->ctx)) goto err;
 
     /* compute X and Y */
     tmp = EC_POINT_new(p->public.G); /* TODO: free this */
@@ -200,15 +200,15 @@ static int pake_common_precompute(struct pake_info *p, BN_CTX *ctx) {
     if (p->isserver) {
         /* compute Y */
         if (!(p->server_state.Y = EC_POINT_new(p->public.G))) goto err;
-        if (!EC_POINT_mul(p->public.G, tmp, p->server_state.beta, NULL, NULL, ctx)) goto err;
-        if (!EC_POINT_add(p->public.G, p->server_state.Y, tmp, p->shared.V_pi_0, ctx)) goto err;    
+        if (!EC_POINT_mul(p->public.G, tmp, p->server_state.beta, NULL, NULL, p->ctx)) goto err;
+        if (!EC_POINT_add(p->public.G, p->server_state.Y, tmp, p->shared.V_pi_0, p->ctx)) goto err;    
     }
 
     if (p->isclient) {
         /* compute X */
         if (!(p->client_state.X = EC_POINT_new(p->public.G))) goto err;
-        if (!EC_POINT_mul(p->public.G, tmp, p->client_state.alpha, NULL, NULL, ctx)) goto err;
-        if (!EC_POINT_add(p->public.G, p->client_state.X, tmp, p->shared.U_pi_0, ctx)) goto err;
+        if (!EC_POINT_mul(p->public.G, tmp, p->client_state.alpha, NULL, NULL, p->ctx)) goto err;
+        if (!EC_POINT_add(p->public.G, p->client_state.X, tmp, p->shared.U_pi_0, p->ctx)) goto err;
     }
 
     ret = 1;
@@ -220,8 +220,7 @@ static int pake_common_precompute(struct pake_info *p, BN_CTX *ctx) {
 int pake_client_set_credentials(struct pake_info *p,
                                 const char *username, 
                                 const char *realm, 
-                                const char *password,
-                                BN_CTX *ctx) {
+                                const char *password) {
     int ret = 0;
     unsigned char H = 0;
     BIGNUM *tmp = NULL, *order = NULL;
@@ -233,7 +232,7 @@ int pake_client_set_credentials(struct pake_info *p,
     order = BN_new();
     tmp = BN_new();
     if (!order || !tmp) goto err;
-    if (!EC_GROUP_get_order(p->public.G, order, ctx)) goto err;
+    if (!EC_GROUP_get_order(p->public.G, order, p->ctx)) goto err;
 
     /* HACK: make sure we can get ~uniform distribution [bittau] */
     if (BN_num_bits(order) > 512 - 64) goto err;
@@ -250,7 +249,7 @@ int pake_client_set_credentials(struct pake_info *p,
     if (!SHA512_Update(&sha, password, 1+strlen(password))) goto err;
     if (!SHA512_Final(md, &sha)) goto err;
     if (!BN_bin2bn(md, sizeof(md), tmp)) goto err;
-    if (!BN_nnmod(p->shared.pi_0, tmp, order, ctx)) goto err;
+    if (!BN_nnmod(p->shared.pi_0, tmp, order, p->ctx)) goto err;
 
     /* get pi_1 */
     /* TODO: need to concatenate with ":"s? */
@@ -264,15 +263,15 @@ int pake_client_set_credentials(struct pake_info *p,
     if (!SHA512_Update(&sha, password, 1+strlen(password))) goto err;
     if (!SHA512_Final(md, &sha)) goto err;
     if (!BN_bin2bn(md, sizeof(md), tmp)) goto err;
-    if (!BN_nnmod(p->client.pi_1, tmp, order, ctx)) goto err;
+    if (!BN_nnmod(p->client.pi_1, tmp, order, p->ctx)) goto err;
 
     if (!pake_common_set_credentials(p, username, realm)) goto err;
 
     /* compute L */
     if (!(p->shared.L = EC_POINT_new(p->public.G))) goto err; /* TODO: free this */
-    if (!EC_POINT_mul(p->public.G, p->shared.L, p->client.pi_1, NULL, NULL, ctx)) goto err;
+    if (!EC_POINT_mul(p->public.G, p->shared.L, p->client.pi_1, NULL, NULL, p->ctx)) goto err;
 
-    if (!pake_common_precompute(p, ctx)) goto err;
+    if (!pake_common_precompute(p)) goto err;
 
     ret = 1;
 
@@ -297,8 +296,7 @@ int pake_server_set_credentials(struct pake_info *p,
                                 const char *username, 
                                 const char *realm,
                                 const BIGNUM *pi_0,
-                                const EC_POINT *L,
-                                BN_CTX *ctx) {
+                                const EC_POINT *L) {
     int ret = 0;
 
     if (!pake_common_set_credentials(p, username, realm)) goto err;
@@ -307,7 +305,7 @@ int pake_server_set_credentials(struct pake_info *p,
     p->shared.pi_0 = BN_dup(pi_0);
     p->shared.L = EC_POINT_dup(L, p->public.G);
 
-    if (!pake_common_precompute(p, ctx)) goto err;
+    if (!pake_common_precompute(p)) goto err;
 
     ret = 1;
 
@@ -326,18 +324,18 @@ int pake_server_recv_X(struct pake_info *p, EC_POINT *X) {
 }
 
 /* Compute $N = L^\beta$ and $Z = (X/U^{\pi_0})^\beta.$ */
-int pake_server_compute_N_Z(struct pake_info *p, BN_CTX *ctx) {
+int pake_server_compute_N_Z(struct pake_info *p) {
     int ret = 0;
     EC_POINT *X2 = NULL;
 
     if (!(X2 = EC_POINT_new(p->public.G))) goto err;
 
     /* Compute $N = L^\beta.$ */
-    if (!EC_POINT_mul(p->public.G, p->shared.N, NULL, p->shared.L, p->server_state.beta, ctx)) goto err;
+    if (!EC_POINT_mul(p->public.G, p->shared.N, NULL, p->shared.L, p->server_state.beta, p->ctx)) goto err;
 
     /* Compute $Z = (X/U^{\pi_0})^\beta.$ */
-    if (!EC_POINT_add(p->public.G, X2, p->server_state.client_X, p->shared.U_minus_pi_0, ctx)) goto err;
-    if (!EC_POINT_mul(p->public.G, p->shared.Z, NULL, X2, p->server_state.beta, ctx)) goto err;
+    if (!EC_POINT_add(p->public.G, X2, p->server_state.client_X, p->shared.U_minus_pi_0, p->ctx)) goto err;
+    if (!EC_POINT_mul(p->public.G, p->shared.Z, NULL, X2, p->server_state.beta, p->ctx)) goto err;
     
     ret = 1;
 
@@ -348,20 +346,20 @@ int pake_server_compute_N_Z(struct pake_info *p, BN_CTX *ctx) {
 }
 
 /* Compute $N = (Y/V^{\pi_0})^{\pi_1}$ and $Z = (Y/V^{\pi_0})^{\pi_1}.$ */
-int pake_client_compute_N_Z(struct pake_info *p, BN_CTX *ctx) {
+int pake_client_compute_N_Z(struct pake_info *p) {
     int ret = 0;
     EC_POINT *Y2 = NULL;
 
     if (!(Y2 = EC_POINT_new(p->public.G))) goto err;
 
     /* Compute $Y2 = Y/V^{\pi_0}.$ */
-    if (!EC_POINT_add(p->public.G, Y2, p->client_state.server_Y, p->shared.V_minus_pi_0, ctx)) goto err;
+    if (!EC_POINT_add(p->public.G, Y2, p->client_state.server_Y, p->shared.V_minus_pi_0, p->ctx)) goto err;
 
     /* Compute $N = (Y/V^{\pi_0})^{\pi_1} = Y2^{\pi_1}.$ */
-    if (!EC_POINT_mul(p->public.G, p->shared.N, NULL, Y2, p->client.pi_1, ctx)) goto err;
+    if (!EC_POINT_mul(p->public.G, p->shared.N, NULL, Y2, p->client.pi_1, p->ctx)) goto err;
 
     /* Compute $Z = (Y/V^{\pi_0})^\alpha = Y2^\alpha.$ */
-    if (!EC_POINT_mul(p->public.G, p->shared.Z, NULL, Y2, p->client_state.alpha, ctx)) goto err;
+    if (!EC_POINT_mul(p->public.G, p->shared.Z, NULL, Y2, p->client_state.alpha, p->ctx)) goto err;
     
     ret = 1;
 
@@ -372,7 +370,7 @@ int pake_client_compute_N_Z(struct pake_info *p, BN_CTX *ctx) {
 }
 
 /* Compute $h = H(\pi_0, X, Y, Z, N).$ */
-int pake_compute_h(struct pake_info *p, BN_CTX *ctx) {
+int pake_compute_h(struct pake_info *p) {
     int ret = 0;
     BIGNUM *P_x = NULL, *P_y = NULL;
     SHA256_CTX sha;
@@ -385,21 +383,21 @@ int pake_compute_h(struct pake_info *p, BN_CTX *ctx) {
 
     /* First, compute N and Z. */
     if (p->isserver) {
-        if (!pake_server_compute_N_Z(p, ctx)) goto err;
+        if (!pake_server_compute_N_Z(p)) goto err;
     } else {
-        if (!pake_client_compute_N_Z(p, ctx)) goto err;
+        if (!pake_client_compute_N_Z(p)) goto err;
     }
 
     /* Now we can compute $h = SHA256(\pi_0, X, Y, Z, N).$ */
     if (!hash_bn(&sha, p->shared.pi_0)) goto err;
     if (!hash_point(&sha, p->public.G, 
                     p->isclient ? p->client_state.X : p->server_state.client_X,
-                    P_x, P_y, ctx)) goto err;
+                    P_x, P_y, p->ctx)) goto err;
     if (!hash_point(&sha, p->public.G, 
                     p->isserver ? p->server_state.Y : p->client_state.server_Y,
-                    P_x, P_y, ctx)) goto err;
-    if (!hash_point(&sha, p->public.G, p->shared.Z, P_x, P_y, ctx)) goto err;
-    if (!hash_point(&sha, p->public.G, p->shared.N, P_x, P_y, ctx)) goto err;    
+                    P_x, P_y, p->ctx)) goto err;
+    if (!hash_point(&sha, p->public.G, p->shared.Z, P_x, P_y, p->ctx)) goto err;
+    if (!hash_point(&sha, p->public.G, p->shared.N, P_x, P_y, p->ctx)) goto err;    
     if (!SHA256_Final(p->shared.h, &sha)) goto err;
     
     ret = 1;
@@ -414,16 +412,16 @@ int pake_compute_h(struct pake_info *p, BN_CTX *ctx) {
 }
 
 /* Compute $resps = H(h, TAG_SERVER | sid).$ */
-int tcpcrypt_pake_compute_resps(struct pake_info *p, unsigned long tcpcrypt_sid, BN_CTX *ctx) {
-    return tcpcrypt_pake_compute_resp(p, tcpcrypt_sid, 1, ctx);
+int tcpcrypt_pake_compute_resps(struct pake_info *p, unsigned long tcpcrypt_sid) {
+    return tcpcrypt_pake_compute_resp(p, tcpcrypt_sid, 1);
 }
 
 /* Compute $respc = H(h, TAG_CLIENT | sid). */
-int tcpcrypt_pake_compute_respc(struct pake_info *p, unsigned long tcpcrypt_sid, BN_CTX *ctx) {
-    return tcpcrypt_pake_compute_resp(p, tcpcrypt_sid, 0, ctx);
+int tcpcrypt_pake_compute_respc(struct pake_info *p, unsigned long tcpcrypt_sid) {
+    return tcpcrypt_pake_compute_resp(p, tcpcrypt_sid, 0);
 }
 
-int tcpcrypt_pake_compute_resp(struct pake_info *p, unsigned long tcpcrypt_sid, int is_resps, BN_CTX *ctx) {
+int tcpcrypt_pake_compute_resp(struct pake_info *p, unsigned long tcpcrypt_sid, int is_resps) {
     int ret = 0;
     const char *hex = "0123456789ABCDEF";
     unsigned char resp[SHA256_DIGEST_LENGTH];
@@ -431,7 +429,7 @@ int tcpcrypt_pake_compute_resp(struct pake_info *p, unsigned long tcpcrypt_sid, 
     unsigned char tag;
     SHA256_CTX sha;
 
-    pake_compute_h(p, ctx);
+    pake_compute_h(p);
 
     /* TODO: QUESTION: Why is it H(h, TAG|sid) and not just H(h, TAG, sid)?
        Does OR'ing the values have a special purpose? For now, this code
