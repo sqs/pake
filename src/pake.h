@@ -76,6 +76,9 @@ int pake_client_init(struct pake_info *p);
 int pake_client_set_credentials(struct pake_info *p, const char *username, const char *realm, const char *password);
 int pake_server_set_credentials(struct pake_info *p, const char *username, const char *realm, const BIGNUM *pi_0, const EC_POINT *L);
 
+char *pake_client_get_X_string(struct pake_info *p);
+char *pake_server_get_Y_string(struct pake_info *p);
+
 int pake_client_recv_Y(struct pake_info *p, EC_POINT *Y);
 int pake_client_recv_Y_string(struct pake_info *p, const char *Y_string);
 int pake_server_recv_X(struct pake_info *p, EC_POINT *X);
