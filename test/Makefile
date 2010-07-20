@@ -8,13 +8,13 @@ LDFLAGS=-g
 .PHONY: test
 
 test: test_pake
-	./test_pake
+	LD_LIBRARY_PATH=.. ./test_pake
 
 %.o: %.c
 	$(CC) $(INCLUDES) $(CFLAGS) -c $< -o $@
 
-$(OUT): $(OBJ) ../libpake.a
-	$(CC) $(LIBS) $(LDFLAGS) -o $@ $(OBJ) ../libpake.a
+$(OUT): $(OBJ) ../libpake.so
+	$(CC) $(LIBS) $(LDFLAGS) -o $@ $(OBJ)
 
 clean:
 	rm -f $(OBJ) $(OUT)
