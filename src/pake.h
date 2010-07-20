@@ -1,8 +1,8 @@
 #ifndef TCPCRYPT_PAKE_H
 #define TCPCRYPT_PAKE_H
 
-#include <openssl/bn.h>
 #include <openssl/ec.h>
+#include <openssl/bn.h>
 #include <openssl/sha.h>
 
 #define RESP_LENGTH 64 /* length of hex-encoded SHA256 hash (respc, resps) */
@@ -66,6 +66,9 @@ struct pake_info {
 
     BN_CTX *ctx;
 };
+
+struct pake_info *pake_server_new();
+struct pake_info *pake_client_new();
 
 int pake_server_init(struct pake_info *p, BIGNUM *beta);
 int pake_client_init(struct pake_info *p);

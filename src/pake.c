@@ -21,6 +21,7 @@ static int pake_client_compute_N_Z(struct pake_info *p);
 
 static int tcpcrypt_pake_compute_resp(struct pake_info *p, unsigned long tcpcrypt_sid, int is_resps);
 
+
 static void debug_bignum(BIGNUM *bn);
 static void debug_point(const EC_GROUP *G, 
                         const char *msg, 
@@ -39,6 +40,26 @@ static int hash_point(SHA256_CTX *sha,
                BIGNUM *P_x,
                BIGNUM *P_y,
                BN_CTX *ctx);
+
+
+struct pake_info *pake_server_new() {
+    struct pake_info *p;
+    p = calloc(1, sizeof(struct pake_info));
+    if (!p) goto err;
+
+    if (!(p->ctx = BN_CTX_new())) goto err;
+    BN_CTX_start(p->ctx);
+
+    return p;
+
+ err:
+    if (p) free(p);
+    return NULL;
+}
+
+struct pake_info *pake_client_new() {
+    return pake_server_new();
+}
 
 int pake_server_init(struct pake_info *p, BIGNUM *beta) {
     int ret = 0;
