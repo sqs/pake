@@ -465,10 +465,6 @@ char *tcpcrypt_pake_compute_resp(struct pake_info *p, unsigned long tcpcrypt_sid
 
     pake_compute_h(p);
 
-    /* TODO: QUESTION: Why is it H(h, TAG|sid) and not just H(h, TAG, sid)?
-       Does OR'ing the values have a special purpose? For now, this code
-       performs the latter operation. */
-
     tag = is_resps ? TCPCRYPT_TAG_SERVER : TCPCRYPT_TAG_CLIENT;
 
     if (!SHA256_Init(&sha)) goto err;
