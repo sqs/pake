@@ -346,6 +346,12 @@ int pake_client_recv_Y(struct pake_info *p, EC_POINT *Y) {
     return 1;
 }
 
+int pake_client_recv_Y_string(struct pake_info *p, const char *Y_string) {
+    EC_POINT *Y = EC_POINT_new(p->public.G);
+    EC_POINT_hex2point(p->public.G, Y_string, Y, p->ctx);
+    return pake_client_recv_Y(p, Y);
+}
+
 int pake_server_recv_X(struct pake_info *p, EC_POINT *X) {
     p->server_state.client_X = X;
     return 1;

@@ -17,7 +17,9 @@ void test_pake() {
     /* TODO: HACK: fake client-server interaction */
     ps->server_state.client_X = pc->client_state.X;
     assert(pake_server_set_credentials(ps, "jsmith", "protected area", pc->shared.pi_0, pc->shared.L));
-    pc->client_state.server_Y = ps->server_state.Y;
+    
+    char *Y_string = EC_POINT_point2hex(ps->public.G, ps->server_state.Y, POINT_CONVERSION_UNCOMPRESSED, ps->ctx);
+    pake_client_recv_Y_string(pc, Y_string);
     
     /* TODO: HACK: fake tcpcrypt sid */
     unsigned long sid = 123456789;
