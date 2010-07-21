@@ -14,10 +14,12 @@ void test_pake() {
 
     /* set credentials */
     assert(pake_client_set_credentials(pc, "jsmith", "protected area", "jsmith"));
-    /* TODO: HACK: fake client-server interaction */
-    ps->server_state.client_X = pc->client_state.X;
-    assert(pake_server_set_credentials(ps, "jsmith", "protected area", pc->shared.pi_0, pc->shared.L));
+    assert(pake_client_set_credentials(ps, "jsmith", "protected area", "jsmith"));
+    //    assert(pake_server_set_credentials(ps, "jsmith", "protected area", pc->shared.pi_0, pc->shared.L));
     
+    char *X_string = EC_POINT_point2hex(pc->public.G, pc->client_state.X, POINT_CONVERSION_UNCOMPRESSED, pc->ctx);
+    pake_server_recv_X_string(ps, X_string);
+
     char *Y_string = EC_POINT_point2hex(ps->public.G, ps->server_state.Y, POINT_CONVERSION_UNCOMPRESSED, ps->ctx);
     pake_client_recv_Y_string(pc, Y_string);
     
@@ -38,9 +40,12 @@ void test_pake() {
 
     assert(ps->shared.h[0] && pc->shared.h[0]);
     assert(strncmp((char *)ps->shared.h, (char *)pc->shared.h, SHA256_DIGEST_LENGTH) == 0);
-  
+    
     assert(strlen((char *)ps->shared.resps));
     assert(strlen((char *)ps->shared.respc));
+    assert(strlen((char *)pc->shared.resps));
+    assert(strlen((char *)pc->shared.respc));
+
     assert(strncmp((char *)ps->shared.resps, (char *)pc->shared.resps, RESP_LENGTH) == 0);
     assert(strncmp((char *)ps->shared.respc, (char *)pc->shared.respc, RESP_LENGTH) == 0);
     assert(strncmp((char *)ps->shared.resps, (char *)ps->shared.respc, RESP_LENGTH) != 0); /* shouldn't be equal - this will fail once per universe */
