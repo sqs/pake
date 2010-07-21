@@ -479,7 +479,7 @@ char *tcpcrypt_pake_compute_resp(struct pake_info *p, unsigned long tcpcrypt_sid
     unsigned char tag;
     SHA256_CTX sha;
 
-    pake_compute_h(p);
+    if (!pake_compute_h(p)) goto err;
 
     tag = is_resps ? TCPCRYPT_TAG_SERVER : TCPCRYPT_TAG_CLIENT;
 
