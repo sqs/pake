@@ -30,8 +30,8 @@ struct pake_shared_info {
 
     unsigned char h[SHA256_DIGEST_LENGTH]; /* = H(\pi_0, X, Y, Z, N) */
 
-    unsigned char respc[RESP_LENGTH]; /* = H(h, TAG_CLIENT | sid) */
-    unsigned char resps[RESP_LENGTH]; /* = H(h, TAG_SERVER | sid) */
+    unsigned char respc[RESP_LENGTH+1]; /* = H(h, TAG_CLIENT | sid) */
+    unsigned char resps[RESP_LENGTH+1]; /* = H(h, TAG_SERVER | sid) */
 };
 
 struct pake_client_info {

@@ -475,7 +475,7 @@ char *tcpcrypt_pake_compute_resp(struct pake_info *p, unsigned long tcpcrypt_sid
     int ret = 0;
     const char *hex = "0123456789ABCDEF";
     unsigned char resp[SHA256_DIGEST_LENGTH];
-    unsigned char *s;
+    unsigned char *s, *orig_s;
     unsigned char tag;
     SHA256_CTX sha;
 
@@ -491,10 +491,10 @@ char *tcpcrypt_pake_compute_resp(struct pake_info *p, unsigned long tcpcrypt_sid
 
     /* convert to hex */
     int i = 0;
-    s = is_resps ? p->shared.resps : p->shared.respc;
+    orig_s = s = is_resps ? p->shared.resps : p->shared.respc;
     for (i=0; i < SHA256_DIGEST_LENGTH; ++i) {
-        *s++ = hex[resp[i] >> 4];
-        *s++ = hex[resp[i] & 0xF];
+        *(s++) = hex[resp[i] >> 4];
+        *(s++) = hex[resp[i] & 0xF];
     }
     *s++ = '\0';
 
@@ -506,7 +506,7 @@ char *tcpcrypt_pake_compute_resp(struct pake_info *p, unsigned long tcpcrypt_sid
     
     bzero(&sha, sizeof(sha));
     
-    if (ret) return (char *)s;
+    if (ret) return (char *)orig_s;
     else return NULL;
 }
 
@@ -538,7 +538,7 @@ void debug_pake_info(const struct pake_info *p) {
     if (p->isclient) {
         printf("\n%s/*** pake_client_info ***/\n", t);
         printf("%spassword = \"%s\"\n", t, p->client.password);
-        printf("%spi_0     =  ", t); debug_bignum(p->client.pi_1); printf("\n");
+        printf("%spi_1     =  ", t); debug_bignum(p->client.pi_1); printf("\n");
 
         printf("\n%s/*** pake_client_state ***/\n", t);
         printf("%salpha = ", t); debug_bignum(p->client_state.alpha); printf("\n");
