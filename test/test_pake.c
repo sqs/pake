@@ -14,8 +14,7 @@ void test_pake() {
 
     /* set credentials */
     assert(pake_client_set_credentials(pc, "jsmith", "protected area", "jsmith"));
-    assert(pake_client_set_credentials(ps, "jsmith", "protected area", "jsmith"));
-    //    assert(pake_server_set_credentials(ps, "jsmith", "protected area", pc->shared.pi_0, pc->shared.L));
+    assert(pake_server_set_credentials(ps, "jsmith", "protected area", pc->shared.pi_0, pc->shared.L));
     
     char *X_string = EC_POINT_point2hex(pc->public.G, pc->client_state.X, POINT_CONVERSION_UNCOMPRESSED, pc->ctx);
     pake_server_recv_X_string(ps, X_string);
