@@ -38,7 +38,9 @@ void test_pake() {
 
     assert(ps->shared.h[0] && pc->shared.h[0]);
     assert(strncmp((char *)ps->shared.h, (char *)pc->shared.h, SHA256_DIGEST_LENGTH) == 0);
-    
+  
+    assert(strlen((char *)ps->shared.resps));
+    assert(strlen((char *)ps->shared.respc));
     assert(strncmp((char *)ps->shared.resps, (char *)pc->shared.resps, RESP_LENGTH) == 0);
     assert(strncmp((char *)ps->shared.respc, (char *)pc->shared.respc, RESP_LENGTH) == 0);
     assert(strncmp((char *)ps->shared.resps, (char *)ps->shared.respc, RESP_LENGTH) != 0); /* shouldn't be equal - this will fail once per universe */
