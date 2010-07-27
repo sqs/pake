@@ -87,8 +87,8 @@ int pake_server_recv_X_string(struct pake_info *p, const char *X_string);
 void pake_free(struct pake_info *p);
 void pake_clear(struct pake_info *p);
 
-char *tcpcrypt_pake_compute_resps(struct pake_info *p, unsigned long tcpcrypt_sid);
-char *tcpcrypt_pake_compute_respc(struct pake_info *p, unsigned long tcpcrypt_sid);
+char *pake_compute_resps(struct pake_info *p, unsigned long tcpcrypt_sid);
+char *pake_compute_respc(struct pake_info *p, unsigned long tcpcrypt_sid);
 
 void debug_pake_info(const struct pake_info *p);
 

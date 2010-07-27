@@ -24,10 +24,10 @@ void test_pake() {
     
     /* TODO: HACK: fake tcpcrypt sid */
     unsigned long sid = 123456789;
-    assert(strlen(tcpcrypt_pake_compute_resps(ps, sid)));
-    assert(strlen(tcpcrypt_pake_compute_respc(ps, sid)));
-    assert(strlen(tcpcrypt_pake_compute_resps(pc, sid)));
-    assert(strlen(tcpcrypt_pake_compute_respc(pc, sid)));
+    assert(strlen(pake_compute_resps(ps, sid)));
+    assert(strlen(pake_compute_respc(ps, sid)));
+    assert(strlen(pake_compute_resps(pc, sid)));
+    assert(strlen(pake_compute_respc(pc, sid)));
     
     /* debug_point(ps->public.G, "server N", ps->shared.N); */
     /* debug_point(pc->public.G, "client N", pc->shared.N); */

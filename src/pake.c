@@ -19,7 +19,7 @@ static int pake_compute_h(struct pake_info *p);
 static int pake_server_compute_N_Z(struct pake_info *p);
 static int pake_client_compute_N_Z(struct pake_info *p);
 
-static char *tcpcrypt_pake_compute_resp(struct pake_info *p, unsigned long tcpcrypt_sid, int is_resps);
+static char *pake_compute_resp(struct pake_info *p, unsigned long tcpcrypt_sid, int is_resps);
 
 
 static void debug_bignum(BIGNUM *bn);
@@ -462,16 +462,16 @@ int pake_compute_h(struct pake_info *p) {
 }
 
 /* Compute $resps = H(h, TAG_SERVER | sid).$ */
-char *tcpcrypt_pake_compute_resps(struct pake_info *p, unsigned long tcpcrypt_sid) {
-    return tcpcrypt_pake_compute_resp(p, tcpcrypt_sid, 1);
+char *pake_compute_resps(struct pake_info *p, unsigned long tcpcrypt_sid) {
+    return pake_compute_resp(p, tcpcrypt_sid, 1);
 }
 
 /* Compute $respc = H(h, TAG_CLIENT | sid). */
-char *tcpcrypt_pake_compute_respc(struct pake_info *p, unsigned long tcpcrypt_sid) {
-    return tcpcrypt_pake_compute_resp(p, tcpcrypt_sid, 0);
+char *pake_compute_respc(struct pake_info *p, unsigned long tcpcrypt_sid) {
+    return pake_compute_resp(p, tcpcrypt_sid, 0);
 }
 
-char *tcpcrypt_pake_compute_resp(struct pake_info *p, unsigned long tcpcrypt_sid, int is_resps) {
+char *pake_compute_resp(struct pake_info *p, unsigned long tcpcrypt_sid, int is_resps) {
     int ret = 0;
     const char *hex = "0123456789ABCDEF";
     unsigned char resp[SHA256_DIGEST_LENGTH];
