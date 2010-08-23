@@ -534,7 +534,12 @@ void debug_pake_info(const struct pake_info *p) {
 
     printf("\n%s/*** pake_shared_info ***/\n", t);
     printf("%spi_0 =  ", t); debug_bignum(p->shared.pi_0); printf("\n");
-    printf("%sL    = ", t); debug_point(p->public.G, "", p->shared.L, NULL);
+    printf("%sL    = ", t); debug_point(p->public.G, "", p->shared.L, NULL); printf("\n");
+    printf("%sN    = ", t); debug_point(p->public.G, "", p->shared.N, NULL); printf("\n");
+    printf("%sZ    = ", t); debug_point(p->public.G, "", p->shared.Z, NULL); printf("\n");
+    printf("%sh    = %*s\n", t, SHA256_DIGEST_LENGTH, p->shared.h);
+    printf("%srespc= %*s\n", t, RESP_LENGTH+1, p->shared.respc);
+    printf("%sresps= %*s\n", t, RESP_LENGTH+1, p->shared.resps);
 
     if (p->isclient) {
         printf("\n%s/*** pake_client_info ***/\n", t);
@@ -552,7 +557,7 @@ void debug_pake_info(const struct pake_info *p) {
         printf("%sY    = ", t); debug_point(p->public.G, "", p->server_state.Y, NULL);
     }
 
-    printf("}\n");
+    printf("\n}\n");
 }
 
 int pake_stringify_bignum(char *dest, BIGNUM *bn) {
