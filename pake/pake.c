@@ -23,13 +23,6 @@ static int pake_client_compute_N_Z(struct pake_info *p);
 
 static char *pake_compute_resp(struct pake_info *p, const char *sessid, int is_resps);
 
-
-static void debug_bignum(BIGNUM *bn);
-static void debug_point(const EC_GROUP *G, 
-                        const char *msg, 
-                        const EC_POINT *P, 
-                        BN_CTX *ctx);
-
 static int get_affine_coordinates(const EC_GROUP *G,
                            const EC_POINT *P,
                            BIGNUM *x,
@@ -550,10 +543,10 @@ void debug_pake_info(const struct pake_info *p) {
     printf("%schar *realm    = \"%s\"\n", t, p->public.realm);
 
     printf("\n%s/*** pake_shared_info ***/\n", t);
-    printf("%spi_0 =  ", t); debug_bignum(p->shared.pi_0); printf("\n");
-    printf("%sL    = ", t); debug_point(p->public.G, "", p->shared.L, NULL); printf("\n");
-    printf("%sN    = ", t); debug_point(p->public.G, "", p->shared.N, NULL); printf("\n");
-    printf("%sZ    = ", t); debug_point(p->public.G, "", p->shared.Z, NULL); printf("\n");
+    printf("%spi_0 =  %s\n", t, BN_bn2hex(p->shared.pi_0));
+    printf("%sL    = %s\n", t, EC_POINT_point2hex(p->public.G, p->shared.L, POINT_CONVERSION_COMPRESSED, NULL));
+    printf("%sN    = %s\n", t, EC_POINT_point2hex(p->public.G, p->shared.N, POINT_CONVERSION_COMPRESSED, NULL));
+    printf("%sZ    = %s\n", t, EC_POINT_point2hex(p->public.G, p->shared.Z, POINT_CONVERSION_COMPRESSED, NULL));
     printf("%sh    = %*s\n", t, SHA256_DIGEST_LENGTH, p->shared.h);
     printf("%srespc= %*s\n", t, RESP_LENGTH+1, p->shared.respc);
     printf("%sresps= %*s\n", t, RESP_LENGTH+1, p->shared.resps);
@@ -561,95 +554,20 @@ void debug_pake_info(const struct pake_info *p) {
     if (p->isclient) {
         printf("\n%s/*** pake_client_info ***/\n", t);
         printf("%spassword = \"%s\"\n", t, p->client.password);
-        printf("%spi_1     =  ", t); debug_bignum(p->client.pi_1); printf("\n");
+        printf("%spi_1     =  %s\n", t, BN_bn2hex(p->client.pi_1));
 
         printf("\n%s/*** pake_client_state ***/\n", t);
-        printf("%salpha = ", t); debug_bignum(p->client_state.alpha); printf("\n");
-        printf("%sX = ", t); debug_point(p->public.G, "", p->client_state.X, NULL); printf("\n");
+        printf("%salpha = %s\n", t, BN_bn2hex(p->client_state.alpha));
+        printf("%sX = %s\n", t, EC_POINT_point2hex(p->public.G, p->client_state.X, POINT_CONVERSION_COMPRESSED, NULL));
     }
 
     if (p->isserver) {
         printf("\n%s/*** pake_server_state ***/\n", t);
-        printf("%sbeta =  ", t); debug_bignum(p->server_state.beta); printf("\n");
-        printf("%sY    = ", t); debug_point(p->public.G, "", p->server_state.Y, NULL);
+        printf("%sbeta =  %s\n", t, BN_bn2hex(p->server_state.beta));;
+        printf("%sY    = %s\n", t, EC_POINT_point2hex(p->public.G, p->server_state.Y, POINT_CONVERSION_COMPRESSED, NULL));
     }
 
     printf("\n}\n");
-}
-
-int pake_stringify_bignum(char *dest, BIGNUM *bn) {
-    if (!bn) goto err;
-
-    int size = BN_num_bytes(bn);
-    unsigned char *out_bn = alloca(size);
-    /* TODO: make sure dest is big enough */
-    int i;
-    int n;
-
-    if (!BN_bn2bin(bn, out_bn)) goto err;
-
-    for (i=0; i<size; i++) {
-        if (i && i % 8 == 0) printf(" ");
-        n = sprintf(dest, "%02hhX", out_bn[i]);
-        dest += n;
-    }
-
-    return 1;
- err:
-    printf("debug_bignum ERROR\n");
-    return 0;
-}
-
-int pake_stringify_ec_point(char *dest, const EC_GROUP *G, const EC_POINT *P, BN_CTX *ctx) {
-    int ret = 0;
-    BIGNUM *x = BN_new(), *y = BN_new();
-    int sx, sy;
-    int n;
-    unsigned char *out_x = NULL, *out_y = NULL;
-    if (!P) goto err;
-    if (!x || !y) goto err;
-    if (!get_affine_coordinates(G, P, x, y, ctx)) goto err;
-
-    sx = BN_num_bytes(x);
-    sy = BN_num_bytes(y);
-    
-    char b[1000];
-    assert(pake_stringify_bignum(b, x));
-    n = sprintf(dest, "(%s,", b);
-    dest += n;
-
-    assert(pake_stringify_bignum(b, y));
-    sprintf(dest, "%s)", b);
-
-    ret = 1;
-
- err:
-    if (out_x) bzero(out_x, sx);
-    if (out_y) bzero(out_y, sy);
-    if (x) BN_clear_free(x);
-    if (y) BN_clear_free(y);
-
-    return ret;
-}
-
-void debug_point(const EC_GROUP *G,
-                 const char *message,
-                 const EC_POINT *P,
-                 BN_CTX *ctx) {  
-    char buf[250]; /* TODO: find size needed for output string */
-    
-    if (strlen(message)) {
-        printf("*** %s: ", message);
-    }
-  
-    pake_stringify_ec_point(buf, G, P, ctx);
-    printf("%s", buf);
-}
-
-void debug_bignum(BIGNUM *bn) {
-    char b[1000];
-    pake_stringify_bignum(b, bn);
-    printf("%s", b);
 }
 
 static int get_affine_coordinates(const EC_GROUP *G,
