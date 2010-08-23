@@ -1,0 +1,32 @@
+#                                               -*- Autoconf -*-
+
+AC_PREREQ([2.65])
+AC_INIT([pake], [0.1], [sqs@cs.stanford.edu])
+AC_CONFIG_SRCDIR([pake/pake.h])
+AC_CONFIG_HEADERS([config.h])
+AC_CONFIG_AUX_DIR(config)
+AC_CONFIG_MACRO_DIR([m4])
+
+AM_INIT_AUTOMAKE([1.9])
+
+# Checks for programs.
+AC_PROG_CC
+AC_PROG_LIBTOOL
+
+# Checks for libraries.
+AC_CHECK_LIB([pake], [pake_server_init_state])
+AC_CHECK_LIB([ssl], [EC_POINT_new])
+
+# Checks for header files.
+AC_FUNC_ALLOCA
+AC_CHECK_HEADERS([stdlib.h string.h strings.h])
+
+# Checks for typedefs, structures, and compiler characteristics.
+
+# Checks for library functions.
+AC_CHECK_FUNCS([bzero memset])
+
+AC_CONFIG_FILES([Makefile
+                 pake/Makefile
+                 test/Makefile])
+AC_OUTPUT

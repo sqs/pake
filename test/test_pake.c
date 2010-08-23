@@ -1,5 +1,5 @@
 #include "test_pake.h"
-#include "pake.h"
+#include <pake/pake.h>
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>

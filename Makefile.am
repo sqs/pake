@@ -1,0 +1,3 @@
+SUBDIRS = pake test
+
+ACLOCAL_AMFLAGS = -I m4

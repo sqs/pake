@@ -1,5 +1,5 @@
-#ifndef TCPCRYPT_PAKE_H
-#define TCPCRYPT_PAKE_H
+#ifndef PAKE_H
+#define PAKE_H
 
 #include <openssl/ec.h>
 #include <openssl/bn.h>
@@ -92,4 +92,4 @@ char *pake_compute_respc(struct pake_info *p, unsigned long tcpcrypt_sid);
 
 void debug_pake_info(const struct pake_info *p);
 
-#endif // TCPCRYPT_PAKE_H
+#endif // PAKE_H
