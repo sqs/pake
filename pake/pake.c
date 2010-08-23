@@ -410,7 +410,7 @@ int pake_client_compute_N_Z(struct pake_info *p) {
     /* Compute $N = (Y/V^{\pi_0})^{\pi_1} = Y2^{\pi_1}.$ */
     if (!EC_POINT_mul(p->public.G, p->shared.N, NULL, Y2, p->client.pi_1, p->ctx)) goto err;
 #ifdef SHOW_WORK
-    printf("SHOW_WORK: pake_client_compute_N_Z: N = Y2^{\pi_1}.\n"
+    printf("SHOW_WORK: pake_client_compute_N_Z: N = Y2^{\\pi_1}.\n"
            "N = %s\nY2 = %s\npi_1=%s\n",
            EC_POINT_point2hex(p->public.G, p->shared.N, POINT_CONVERSION_COMPRESSED, p->ctx),
            EC_POINT_point2hex(p->public.G, Y2, POINT_CONVERSION_COMPRESSED, p->ctx),
