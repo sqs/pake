@@ -339,11 +339,11 @@ int pake_server_set_credentials(struct pake_info *p,
 char *pake_client_get_X_string(struct pake_info *p) {
     /* TODO: must OPENSSL_free this string, make it static? same for
        server_get_Y_string */
-    return EC_POINT_point2hex(p->public.G, p->client_state.X, POINT_CONVERSION_UNCOMPRESSED, p->ctx);
+    return EC_POINT_point2hex(p->public.G, p->client_state.X, POINT_CONVERSION_COMPRESSED, p->ctx);
 }
 
 char *pake_server_get_Y_string(struct pake_info *p) {
-    return EC_POINT_point2hex(p->public.G, p->server_state.Y, POINT_CONVERSION_UNCOMPRESSED, p->ctx);
+    return EC_POINT_point2hex(p->public.G, p->server_state.Y, POINT_CONVERSION_COMPRESSED, p->ctx);
 }
 
 int pake_client_recv_Y(struct pake_info *p, EC_POINT *Y) {
