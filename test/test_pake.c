@@ -22,11 +22,11 @@ void test_pake() {
     pake_client_recv_Y_string(pc, Y_string);
     
     /* TODO: HACK: fake tcpcrypt sid */
-    unsigned long sid = 123456789;
-    assert(strlen(pake_compute_resps(ps, sid)));
-    assert(strlen(pake_compute_respc(ps, sid)));
-    assert(strlen(pake_compute_resps(pc, sid)));
-    assert(strlen(pake_compute_respc(pc, sid)));
+    char *sessid = "1234567890ABCDEFFEDCBA0987654321";
+    assert(strlen(pake_compute_resps(ps, sessid)));
+    assert(strlen(pake_compute_respc(ps, sessid)));
+    assert(strlen(pake_compute_resps(pc, sessid)));
+    assert(strlen(pake_compute_respc(pc, sessid)));
     
     /* debug_point(ps->public.G, "server N", ps->shared.N); */
     /* debug_point(pc->public.G, "client N", pc->shared.N); */

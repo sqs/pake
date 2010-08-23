@@ -19,7 +19,7 @@ static int pake_compute_h(struct pake_info *p);
 static int pake_server_compute_N_Z(struct pake_info *p);
 static int pake_client_compute_N_Z(struct pake_info *p);
 
-static char *pake_compute_resp(struct pake_info *p, unsigned long tcpcrypt_sid, int is_resps);
+static char *pake_compute_resp(struct pake_info *p, const char *sessid, int is_resps);
 
 
 static void debug_bignum(BIGNUM *bn);
@@ -462,16 +462,16 @@ int pake_compute_h(struct pake_info *p) {
 }
 
 /* Compute $resps = H(h, TAG_SERVER | sid).$ */
-char *pake_compute_resps(struct pake_info *p, unsigned long tcpcrypt_sid) {
-    return pake_compute_resp(p, tcpcrypt_sid, 1);
+char *pake_compute_resps(struct pake_info *p, const char *sessid) {
+    return pake_compute_resp(p, sessid, 1);
 }
 
 /* Compute $respc = H(h, TAG_CLIENT | sid). */
-char *pake_compute_respc(struct pake_info *p, unsigned long tcpcrypt_sid) {
-    return pake_compute_resp(p, tcpcrypt_sid, 0);
+char *pake_compute_respc(struct pake_info *p, const char *sessid) {
+    return pake_compute_resp(p, sessid, 0);
 }
 
-char *pake_compute_resp(struct pake_info *p, unsigned long tcpcrypt_sid, int is_resps) {
+char *pake_compute_resp(struct pake_info *p, const char *sessid, int is_resps) {
     int ret = 0;
     const char *hex = "0123456789ABCDEF";
     unsigned char resp[SHA256_DIGEST_LENGTH];
@@ -485,7 +485,8 @@ char *pake_compute_resp(struct pake_info *p, unsigned long tcpcrypt_sid, int is_
 
     if (!SHA256_Init(&sha)) goto err;
     if (!SHA256_Update(&sha, p->shared.h, sizeof(p->shared.h))) goto err;
-    if (!SHA256_Update(&sha, &tcpcrypt_sid, sizeof(tcpcrypt_sid))) goto err; /* TODO: non-portable to read bytes of long -- two sides of connection could have different endianness */
+    /* TODO: make sessid length a constant */
+    if (!SHA256_Update(&sha, sessid, strnlen(sessid, 512))) goto err; 
     if (!SHA256_Update(&sha, &tag, sizeof(tag))) goto err;
     if (!SHA256_Final(resp, &sha)) goto err;
 
