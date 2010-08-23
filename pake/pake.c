@@ -8,6 +8,8 @@
 #include <openssl/obj_mac.h>
 #include <assert.h>
 
+#define SHOW_WORK 1
+
 const unsigned char TCPCRYPT_TAG_CLIENT = 0;
 const unsigned char TCPCRYPT_TAG_SERVER = 1;
 
@@ -382,6 +384,13 @@ int pake_server_compute_N_Z(struct pake_info *p) {
 
     /* Compute $N = L^\beta.$ */
     if (!EC_POINT_mul(p->public.G, p->shared.N, NULL, p->shared.L, p->server_state.beta, p->ctx)) goto err;
+#ifdef SHOW_WORK
+    printf("SHOW_WORK: pake_server_compute_N_Z: N = L^beta.\n"
+           "N = %s\nL = %s\nbeta=%s\n",
+           EC_POINT_point2hex(p->public.G, p->shared.N, POINT_CONVERSION_COMPRESSED, p->ctx),
+           EC_POINT_point2hex(p->public.G, p->shared.L, POINT_CONVERSION_COMPRESSED, p->ctx),
+           BN_bn2hex(p->server_state.beta));
+#endif
 
     /* Compute $Z = (X/U^{\pi_0})^\beta.$ */
     if (!EC_POINT_add(p->public.G, X2, p->server_state.client_X, p->shared.U_minus_pi_0, p->ctx)) goto err;
@@ -407,6 +416,14 @@ int pake_client_compute_N_Z(struct pake_info *p) {
 
     /* Compute $N = (Y/V^{\pi_0})^{\pi_1} = Y2^{\pi_1}.$ */
     if (!EC_POINT_mul(p->public.G, p->shared.N, NULL, Y2, p->client.pi_1, p->ctx)) goto err;
+#ifdef SHOW_WORK
+    printf("SHOW_WORK: pake_client_compute_N_Z: N = Y2^{\pi_1}.\n"
+           "N = %s\nY2 = %s\npi_1=%s\n",
+           EC_POINT_point2hex(p->public.G, p->shared.N, POINT_CONVERSION_COMPRESSED, p->ctx),
+           EC_POINT_point2hex(p->public.G, Y2, POINT_CONVERSION_COMPRESSED, p->ctx),
+           BN_bn2hex(p->client.pi_1));
+#endif
+
 
     /* Compute $Z = (Y/V^{\pi_0})^\alpha = Y2^\alpha.$ */
     if (!EC_POINT_mul(p->public.G, p->shared.Z, NULL, Y2, p->client_state.alpha, p->ctx)) goto err;
