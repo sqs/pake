@@ -545,8 +545,14 @@ void debug_pake_info(const struct pake_info *p) {
     printf("\n%s/*** pake_shared_info ***/\n", t);
     printf("%spi_0 =  %s\n", t, BN_bn2hex(p->shared.pi_0));
     printf("%sL    = %s\n", t, EC_POINT_point2hex(p->public.G, p->shared.L, POINT_CONVERSION_COMPRESSED, NULL));
-    printf("%sN    = %s\n", t, EC_POINT_point2hex(p->public.G, p->shared.N, POINT_CONVERSION_COMPRESSED, NULL));
-    printf("%sZ    = %s\n", t, EC_POINT_point2hex(p->public.G, p->shared.Z, POINT_CONVERSION_COMPRESSED, NULL));
+    printf("\n");
+    printf("%sV_pi_0 = %s\n", t, EC_POINT_point2hex(p->public.G, p->shared.V_pi_0, POINT_CONVERSION_COMPRESSED, NULL));
+    printf("%sU_pi_0 = %s\n", t, EC_POINT_point2hex(p->public.G, p->shared.U_pi_0, POINT_CONVERSION_COMPRESSED, NULL));
+    printf("%sV_-pi_0= %s\n", t, EC_POINT_point2hex(p->public.G, p->shared.V_minus_pi_0, POINT_CONVERSION_COMPRESSED, NULL));
+    printf("%sU_-pi_0= %s\n", t, EC_POINT_point2hex(p->public.G, p->shared.U_minus_pi_0, POINT_CONVERSION_COMPRESSED, NULL));
+    printf("\n");
+    printf("%sN    = %s\n", t, p->shared.N ? EC_POINT_point2hex(p->public.G, p->shared.N, POINT_CONVERSION_COMPRESSED, NULL) : "null");
+    printf("%sZ    = %s\n", t, p->shared.Z ? EC_POINT_point2hex(p->public.G, p->shared.Z, POINT_CONVERSION_COMPRESSED, NULL) : "null");
     printf("%sh    = %*s\n", t, SHA256_DIGEST_LENGTH, p->shared.h);
     printf("%srespc= %*s\n", t, RESP_LENGTH+1, p->shared.respc);
     printf("%sresps= %*s\n", t, RESP_LENGTH+1, p->shared.resps);
@@ -559,12 +565,14 @@ void debug_pake_info(const struct pake_info *p) {
         printf("\n%s/*** pake_client_state ***/\n", t);
         printf("%salpha = %s\n", t, BN_bn2hex(p->client_state.alpha));
         printf("%sX = %s\n", t, EC_POINT_point2hex(p->public.G, p->client_state.X, POINT_CONVERSION_COMPRESSED, NULL));
+        printf("%ssrv_Y = %s\n", t, EC_POINT_point2hex(p->public.G, p->client_state.server_Y, POINT_CONVERSION_COMPRESSED, NULL));
     }
 
     if (p->isserver) {
         printf("\n%s/*** pake_server_state ***/\n", t);
         printf("%sbeta =  %s\n", t, BN_bn2hex(p->server_state.beta));;
         printf("%sY    = %s\n", t, EC_POINT_point2hex(p->public.G, p->server_state.Y, POINT_CONVERSION_COMPRESSED, NULL));
+        printf("%scli_X= %s\n", t, p->server_state.client_X ? EC_POINT_point2hex(p->public.G, p->server_state.client_X, POINT_CONVERSION_COMPRESSED, NULL) : "null");
     }
 
     printf("\n}\n");
