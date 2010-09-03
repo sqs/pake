@@ -261,28 +261,30 @@ int pake_client_set_credentials(struct pake_info *p,
     if (BN_num_bits(order) > 512 - 64) goto err;
 
     /* get pi_0 */
-    /* TODO: need to concatenate with ":"s? */
     /* TODO: the server doesn't actually know the password -- only pi_0 is sent to it */
     if (!(p->shared.pi_0 = BN_new())) goto err; /* TODO: free this */
     H = 0;
     if (!SHA512_Init(&sha)) goto err;
     if (!SHA512_Update(&sha, &H, 1)) goto err;
     if (!SHA512_Update(&sha, p->public.username, 1+strlen(p->public.username))) goto err;
+    if (!SHA512_Update(&sha, ":", 1)) goto err;
     if (!SHA512_Update(&sha, p->public.realm, 1+strlen(p->public.realm))) goto err;
+    if (!SHA512_Update(&sha, ":", 1)) goto err;
     if (!SHA512_Update(&sha, password, 1+strlen(password))) goto err;
     if (!SHA512_Final(md, &sha)) goto err;
     if (!BN_bin2bn(md, sizeof(md), tmp)) goto err;
     if (!BN_nnmod(p->shared.pi_0, tmp, order, p->ctx)) goto err;
 
     /* get pi_1 */
-    /* TODO: need to concatenate with ":"s? */
     /* TODO: the server doesn't actually know pi_1 -- only L is sent to it */
     if (!(p->client.pi_1 = BN_new())) goto err; /* TODO: free this */
     H = 1;
     if (!SHA512_Init(&sha)) goto err;
     if (!SHA512_Update(&sha, &H, 1)) goto err;
     if (!SHA512_Update(&sha, p->public.username, 1+strlen(p->public.username))) goto err;
+    if (!SHA512_Update(&sha, ":", 1)) goto err;
     if (!SHA512_Update(&sha, p->public.realm, 1+strlen(p->public.realm))) goto err;
+    if (!SHA512_Update(&sha, ":", 1)) goto err;
     if (!SHA512_Update(&sha, password, 1+strlen(password))) goto err;
     if (!SHA512_Final(md, &sha)) goto err;
     if (!BN_bin2bn(md, sizeof(md), tmp)) goto err;
