@@ -261,7 +261,6 @@ int pake_client_set_credentials(struct pake_info *p,
     if (BN_num_bits(order) > 512 - 64) goto err;
 
     /* get pi_0 */
-    /* TODO: the server doesn't actually know the password -- only pi_0 is sent to it */
     if (!(p->shared.pi_0 = BN_new())) goto err; /* TODO: free this */
     H = 0;
     if (!SHA512_Init(&sha)) goto err;
@@ -276,7 +275,6 @@ int pake_client_set_credentials(struct pake_info *p,
     if (!BN_nnmod(p->shared.pi_0, tmp, order, p->ctx)) goto err;
 
     /* get pi_1 */
-    /* TODO: the server doesn't actually know pi_1 -- only L is sent to it */
     if (!(p->client.pi_1 = BN_new())) goto err; /* TODO: free this */
     H = 1;
     if (!SHA512_Init(&sha)) goto err;
