@@ -496,7 +496,7 @@ char *pake_compute_resp(struct pake_info *p, const char *sessid, int is_resps) {
     if (!SHA256_Init(&sha)) goto err;
     if (!SHA256_Update(&sha, p->shared.h, sizeof(p->shared.h))) goto err;
     /* TODO: make sessid length a constant */
-    if (!SHA256_Update(&sha, sessid, strnlen(sessid, 512))) goto err; 
+    if (sessid && !SHA256_Update(&sha, sessid, strnlen(sessid, 512))) goto err; 
     if (!SHA256_Update(&sha, &tag, sizeof(tag))) goto err;
     if (!SHA256_Final(resp, &sha)) goto err;
 
