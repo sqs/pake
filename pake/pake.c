@@ -508,7 +508,7 @@ char *pake_compute_resp(struct pake_info *p, const char *sessid, int is_resps) {
         *(s++) = hex[resp[i] >> 4];
         *(s++) = hex[resp[i] & 0xF];
     }
-    *s++ = '\0';
+    *s = '\0';
 
     ret = 1;
 
