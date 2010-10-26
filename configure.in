@@ -14,8 +14,8 @@ AC_PROG_CC
 AC_PROG_LIBTOOL
 
 # Checks for libraries.
-AC_CHECK_LIB([pake], [pake_server_init_state])
 AC_CHECK_LIB([ssl], [EC_POINT_new])
+AC_CHECK_LIB([crypto], [BN_bin2bn])
 
 # Checks for header files.
 AC_FUNC_ALLOCA
