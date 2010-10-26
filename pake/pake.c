@@ -481,6 +481,7 @@ char *pake_compute_respc(struct pake_info *p, const char *sessid) {
     return pake_compute_resp(p, sessid, 0);
 }
 
+/* Expects sessid is a hex string of the session ID. */
 char *pake_compute_resp(struct pake_info *p, const char *sessid, int is_resps) {
     int ret = 0;
     const char *hex = "0123456789ABCDEF";
@@ -510,6 +511,15 @@ char *pake_compute_resp(struct pake_info *p, const char *sessid, int is_resps) {
     *s++ = '\0';
 
     ret = 1;
+
+#ifdef SHOW_WORK
+    printf("SHOW_WORK: pake_compute_resp: resp%c = SHA256(h, TAG | sid)\n"
+           "h = %s\nsessid = %s\nstrlen(sessid)=%zu\n",
+           is_resps ? 's' : 'c',
+           p->shared.h,
+           sessid,
+           strnlen(sessid, 512));
+#endif
 
     goto err;
 
